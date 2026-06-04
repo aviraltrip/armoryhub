@@ -1,0 +1,6 @@
+# Treat HTML and CSS files as not detectable in repository language statistics
+*.html linguist-detectable=false
+*.css linguist-detectable=false
+
+# Alternatively, mark static assets directory as vendored
+src/main/resources/static/* linguist-vendored
