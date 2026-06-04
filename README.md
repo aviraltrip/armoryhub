@@ -1,6 +1,6 @@
-# 🪖 Armoury Command - Tactical Inventory Management System
+# 🪖 ArmouryHub - Tactical Inventory Management System
 
-An efficient, lightweight, and modern **Armoury Management System** built with **Spring Boot** and **MySQL**. It is designed to catalog weapons, assign equipment to officers, manage storage categories, track returns, push real-time alerts via the Observer Pattern, and log compliance events to an immutable security audit database.
+An efficient, lightweight, and modern **ArmouryHub** built with **Spring Boot** and **MySQL**. It is designed to catalog weapons, assign equipment to officers, manage storage categories, track returns, push real-time alerts via the Observer Pattern, and log compliance events to an immutable security audit database.
 
 The user interface features a **Light Tactical Desert Theme** inspired by military field control consoles, complete with coordinate grids, monospace telemetry displays, and structured status feeds.
 
