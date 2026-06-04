@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Armoury Inventory - Armoury Management System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header>
+    <div class="nav-container">
+      <div class="logo-section">
+        <div class="logo-icon">A</div>
+        <div class="logo-text">ARMOURY COMMAND</div>
+      </div>
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link active" id="nav-inventory">Inventory</a>
+        <a href="issuance.html" class="nav-link" id="nav-issuance">Issuance & returns</a>
+        <a href="audit.html" class="nav-link" id="nav-audit">Audit Logs</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Page Title -->
+    <div class="page-title-section">
+      <h1 class="page-title">Weapon Inventory</h1>
+      <p class="page-subtitle">Register and oversee tactical weapons and inventory categories.</p>
+    </div>
+
+    <!-- Overview Counters -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+      <div class="glass-card" style="margin-bottom: 0; padding: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
+        <div>
+          <span style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Total Weapons</span>
+          <h2 id="stat-total" style="font-size: 2.25rem; font-weight: 800; color: var(--accent-cyan);">0</h2>
+        </div>
+        <div style="font-size: 2rem; opacity: 0.3;">🔫</div>
+      </div>
+      <div class="glass-card" style="margin-bottom: 0; padding: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
+        <div>
+          <span style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Available</span>
+          <h2 id="stat-available" style="font-size: 2.25rem; font-weight: 800; color: var(--accent-emerald);">0</h2>
+        </div>
+        <div style="font-size: 2rem; opacity: 0.3;">🟢</div>
+      </div>
+      <div class="glass-card" style="margin-bottom: 0; padding: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
+        <div>
+          <span style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Issued</span>
+          <h2 id="stat-issued" style="font-size: 2.25rem; font-weight: 800; color: var(--accent-amber);">0</h2>
+        </div>
+        <div style="font-size: 2rem; opacity: 0.3;">🔶</div>
+      </div>
+      <div class="glass-card" style="margin-bottom: 0; padding: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
+        <div>
+          <span style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Categories</span>
+          <h2 id="stat-categories" style="font-size: 2.25rem; font-weight: 800; color: var(--accent-purple);">0</h2>
+        </div>
+        <div style="font-size: 2rem; opacity: 0.3;">📂</div>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="dashboard-grid">
+      
+      <!-- Sidebar Control Panels -->
+      <div class="sidebar-column">
+        <!-- Weapon Registration Form -->
+        <div class="glass-card">
+          <div class="card-header">Register New Weapon</div>
+          <form id="form-add-weapon">
+            <div class="form-group">
+              <label class="form-label">Serial Number</label>
+              <input type="text" id="weapon-sn" class="form-control" placeholder="e.g. SN-998822" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Model/Name</label>
+              <input type="text" id="weapon-name" class="form-control" placeholder="e.g. Colt M4A1" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select id="weapon-category-select" class="form-control" required>
+                <option value="">Select Category...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Status</label>
+              <select id="weapon-status" class="form-control">
+                <option value="OPERATIONAL">OPERATIONAL</option>
+                <option value="MAINTENANCE">MAINTENANCE</option>
+                <option value="DECOMMISSIONED">DECOMMISSIONED</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary" id="btn-submit-weapon">Add to Armoury</button>
+          </form>
+        </div>
+
+        <!-- Category Addition Form -->
+        <div class="glass-card">
+          <div class="card-header">Create Category</div>
+          <form id="form-add-category">
+            <div class="form-group">
+              <label class="form-label">Category Name</label>
+              <input type="text" id="category-name" class="form-control" placeholder="e.g. Grenade Launcher" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <textarea id="category-desc" class="form-control" placeholder="Write description..." rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-secondary" id="btn-submit-category">Save Category</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Main Content Column -->
+      <div class="main-column">
+        <!-- Weapon List Panel -->
+        <div class="glass-card">
+          <div class="card-header">
+            <span>Armoury Inventory Registry</span>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <select id="filter-category" class="form-control" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                <option value="all">All Categories</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table id="table-weapons">
+              <thead>
+                <tr>
+                  <th>S/N</th>
+                  <th>Weapon Model</th>
+                  <th>Category</th>
+                  <th>Status</th>
+                  <th>Availability</th>
+                </tr>
+              </thead>
+              <tbody id="weapons-list-body">
+                <tr>
+                  <td colspan="5" class="empty-state">Loading inventory...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Script Logic -->
+  <script>
+    const API_URL = '';
+
+    // Elements
+    const formAddWeapon = document.getElementById('form-add-weapon');
+    const formAddCategory = document.getElementById('form-add-category');
+    const categorySelect = document.getElementById('weapon-category-select');
+    const filterCategory = document.getElementById('filter-category');
+    const weaponsBody = document.getElementById('weapons-list-body');
+
+    // Stats Elements
+    const statTotal = document.getElementById('stat-total');
+    const statAvailable = document.getElementById('stat-available');
+    const statIssued = document.getElementById('stat-issued');
+    const statCategories = document.getElementById('stat-categories');
+
+    // Init Page
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCategories();
+      loadWeapons();
+    });
+
+    // Show Toast Alert
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `
+        <span>${type === 'success' ? '✔' : '❌'}</span>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // Load Categories from Backend
+    function loadCategories() {
+      fetch(`${API_URL}/api/categories`)
+        .then(res => res.json())
+        .then(data => {
+          statCategories.textContent = data.length;
+          
+          // Clear and refill select options
+          categorySelect.innerHTML = '<option value="">Select Category...</option>';
+          filterCategory.innerHTML = '<option value="all">All Categories</option>';
+
+          data.forEach(cat => {
+            const opt1 = document.createElement('option');
+            opt1.value = cat.id;
+            opt1.textContent = cat.name;
+            categorySelect.appendChild(opt1);
+
+            const opt2 = document.createElement('option');
+            opt2.value = cat.id;
+            opt2.textContent = cat.name;
+            filterCategory.appendChild(opt2);
+          });
+        })
+        .catch(err => {
+          console.error(err);
+          showToast('Failed to load categories', 'error');
+        });
+    }
+
+    // Load Weapons
+    function loadWeapons(categoryId = 'all') {
+      let url = `${API_URL}/api/weapons`;
+      if (categoryId !== 'all') {
+        url = `${API_URL}/api/weapons/category/${categoryId}`;
+      }
+
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          renderWeaponsTable(data);
+          updateInventoryStats(data);
+        })
+        .catch(err => {
+          console.error(err);
+          weaponsBody.innerHTML = `<tr><td colspan="5" class="empty-state" style="color: var(--accent-rose)">Failed to fetch inventory. Check database connection.</td></tr>`;
+        });
+    }
+
+    // Render Table
+    function renderWeaponsTable(weapons) {
+      weaponsBody.innerHTML = '';
+      if (weapons.length === 0) {
+        weaponsBody.innerHTML = `<tr><td colspan="5" class="empty-state">No weapons in register. Add one to start.</td></tr>`;
+        return;
+      }
+
+      weapons.forEach(w => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-weight: 600; font-family: monospace; color: var(--accent-cyan);">${w.serialNumber}</td>
+          <td style="font-weight: 500;">${w.name}</td>
+          <td><span class="badge" style="background: rgba(139, 92, 246, 0.08); color: var(--accent-purple); border: 1px solid rgba(139, 92, 246, 0.15);">${w.category.name}</span></td>
+          <td><span class="badge ${w.status === 'OPERATIONAL' ? 'badge-available' : 'badge-danger'}">${w.status}</span></td>
+          <td>
+            <span class="badge ${w.available ? 'badge-available' : 'badge-issued'}">
+              ${w.available ? 'Available' : 'Issued'}
+            </span>
+          </td>
+        `;
+        weaponsBody.appendChild(tr);
+      });
+    }
+
+    // Update Counter Stats
+    function updateInventoryStats(weapons) {
+      statTotal.textContent = weapons.length;
+      const availCount = weapons.filter(w => w.available).length;
+      statAvailable.textContent = availCount;
+      statIssued.textContent = weapons.length - availCount;
+    }
+
+    // Handle Form Add Category
+    formAddCategory.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const catName = document.getElementById('category-name').value.trim();
+      const catDesc = document.getElementById('category-desc').value.trim();
+
+      fetch(`${API_URL}/api/categories`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: catName, description: catDesc })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to create category');
+        return res.json();
+      })
+      .then(data => {
+        showToast(`Category "${data.name}" added successfully`);
+        formAddCategory.reset();
+        loadCategories();
+      })
+      .catch(err => {
+        console.error(err);
+        showToast('Error: Category already exists or invalid data', 'error');
+      });
+    });
+
+    // Handle Form Add Weapon
+    formAddWeapon.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const sn = document.getElementById('weapon-sn').value.trim();
+      const name = document.getElementById('weapon-name').value.trim();
+      const categoryId = document.getElementById('weapon-category-select').value;
+      const status = document.getElementById('weapon-status').value;
+
+      fetch(`${API_URL}/api/weapons`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ serialNumber: sn, name, categoryId: parseInt(categoryId), status })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to add weapon');
+        return res.json();
+      })
+      .then(data => {
+        showToast(`Weapon "${data.name}" registered successfully`);
+        formAddWeapon.reset();
+        loadWeapons(filterCategory.value);
+      })
+      .catch(err => {
+        console.error(err);
+        showToast('Error: Serial number must be unique', 'error');
+      });
+    });
+
+    // Filter Change
+    filterCategory.addEventListener('change', () => {
+      loadWeapons(filterCategory.value);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Audit Log - Armoury Management System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header>
+    <div class="nav-container">
+      <div class="logo-section">
+        <div class="logo-icon">A</div>
+        <div class="logo-text">ARMOURY COMMAND</div>
+      </div>
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link" id="nav-inventory">Inventory</a>
+        <a href="issuance.html" class="nav-link" id="nav-issuance">Issuance & returns</a>
+        <a href="audit.html" class="nav-link active" id="nav-audit">Audit Logs</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Page Title -->
+    <div class="page-title-section">
+      <h1 class="page-title">Immutable Security Audit Logs</h1>
+      <p class="page-subtitle">Historical records of all inventory movements, authorization status changes, and actor transactions.</p>
+    </div>
+
+    <!-- Main Glass Card -->
+    <div class="glass-card">
+      <div class="card-header">
+        <span>Compliance Tracking System Logs</span>
+        <button id="btn-refresh" class="btn btn-secondary" style="width: auto; padding: 0.4rem 1rem; font-size: 0.85rem; border-color: rgba(255,255,255,0.1)">
+          🔄 Refresh Logs
+        </button>
+      </div>
+
+      <!-- Filters & Search -->
+      <div class="search-filter-bar">
+        <input type="text" id="search-audit" class="form-control search-input" placeholder="Search logs by action, details, actor or badge...">
+        <select id="filter-action" class="form-control" style="width: auto; max-width: 250px;">
+          <option value="all">All Actions</option>
+          <option value="CREATE_CATEGORY">CREATE_CATEGORY</option>
+          <option value="ADD_WEAPON">ADD_WEAPON</option>
+          <option value="REGISTER_OFFICER">REGISTER_OFFICER</option>
+          <option value="ISSUE_WEAPON">ISSUE_WEAPON</option>
+          <option value="RETURN_WEAPON">RETURN_WEAPON</option>
+        </select>
+      </div>
+
+      <!-- Table -->
+      <div class="table-container">
+        <table id="table-audit">
+          <thead>
+            <tr>
+              <th style="width: 200px;">Timestamp</th>
+              <th style="width: 200px;">Action Type</th>
+              <th>Detailed Description</th>
+              <th style="width: 150px;">Authorized Actor</th>
+            </tr>
+          </thead>
+          <tbody id="audit-list-body">
+            <tr>
+              <td colspan="4" class="empty-state">Retrieving compliance logs...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Script Logic -->
+  <script>
+    const API_URL = '';
+    let allLogs = [];
+
+    // Elements
+    const auditBody = document.getElementById('audit-list-body');
+    const searchInput = document.getElementById('search-audit');
+    const actionFilter = document.getElementById('filter-action');
+    const btnRefresh = document.getElementById('btn-refresh');
+
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+      loadLogs();
+    });
+
+    // Toast Alert Helper
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `
+        <span>${type === 'success' ? '✔' : '❌'}</span>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // Load Logs from Backend
+    function loadLogs() {
+      fetch(`${API_URL}/api/audit`)
+        .then(res => res.json())
+        .then(data => {
+          allLogs = data;
+          applyFilters();
+        })
+        .catch(err => {
+          console.error(err);
+          auditBody.innerHTML = `<tr><td colspan="4" class="empty-state" style="color: var(--accent-rose)">Failed to load audit logs.</td></tr>`;
+        });
+    }
+
+    // Apply Filter & Search
+    function applyFilters() {
+      const query = searchInput.value.toLowerCase().trim();
+      const action = actionFilter.value;
+
+      let filtered = allLogs;
+
+      if (action !== 'all') {
+        filtered = filtered.filter(log => log.action === action);
+      }
+
+      if (query !== '') {
+        filtered = filtered.filter(log => 
+          log.action.toLowerCase().includes(query) || 
+          log.details.toLowerCase().includes(query) || 
+          log.actor.toLowerCase().includes(query)
+        );
+      }
+
+      renderAuditTable(filtered);
+    }
+
+    // Render Table rows
+    function renderAuditTable(logs) {
+      auditBody.innerHTML = '';
+      if (logs.length === 0) {
+        auditBody.innerHTML = `<tr><td colspan="4" class="empty-state">No audit logs match the current search filters.</td></tr>`;
+        return;
+      }
+
+      logs.forEach(log => {
+        const dateObj = new Date(log.timestamp);
+        const timeStr = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString();
+        
+        let rowClass = '';
+        if (log.action === 'ADD_WEAPON' || log.action === 'CREATE_CATEGORY') rowClass = 'audit-row-create';
+        else if (log.action === 'ISSUE_WEAPON') rowClass = 'audit-row-issue';
+        else if (log.action === 'RETURN_WEAPON') rowClass = 'audit-row-return';
+
+        const tr = document.createElement('tr');
+        if (rowClass) tr.className = rowClass;
+
+        tr.innerHTML = `
+          <td style="font-family: monospace; font-size: 0.85rem; color: var(--text-muted);">${timeStr}</td>
+          <td>
+            <span class="badge" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--accent-cyan);">
+              ${log.action}
+            </span>
+          </td>
+          <td style="font-size: 0.95rem; font-weight: 500;">${log.details}</td>
+          <td>
+            <div style="font-weight: 600; font-size: 0.9rem; color: var(--accent-purple);">${log.actor}</div>
+          </td>
+        `;
+        auditBody.appendChild(tr);
+      });
+    }
+
+    // Bind Listeners
+    searchInput.addEventListener('input', applyFilters);
+    actionFilter.addEventListener('change', applyFilters);
+    btnRefresh.addEventListener('click', () => {
+      loadLogs();
+      showToast('Audit logs feed refreshed');
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weapon Issuance & Returns - Armoury Management System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header>
+    <div class="nav-container">
+      <div class="logo-section">
+        <div class="logo-icon">A</div>
+        <div class="logo-text">ARMOURY COMMAND</div>
+      </div>
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link" id="nav-inventory">Inventory</a>
+        <a href="issuance.html" class="nav-link active" id="nav-issuance">Issuance & returns</a>
+        <a href="audit.html" class="nav-link" id="nav-audit">Audit Logs</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Page Title -->
+    <div class="page-title-section">
+      <h1 class="page-title">Issuance & Returns Dashboard</h1>
+      <p class="page-subtitle">Track tactical assignments, register personnel, and monitor return statuses.</p>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="dashboard-grid">
+      
+      <!-- Left Column: Forms -->
+      <div class="sidebar-column">
+        <!-- Officer Registration Form -->
+        <div class="glass-card">
+          <div class="card-header">Register Officer</div>
+          <form id="form-register-officer">
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input type="text" id="officer-name" class="form-control" placeholder="e.g. Officer Alex Mercer" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Badge Number</label>
+              <input type="text" id="officer-badge" class="form-control" placeholder="e.g. B-7489" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Rank</label>
+              <input type="text" id="officer-rank" class="form-control" placeholder="e.g. Corporal" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input type="email" id="officer-email" class="form-control" placeholder="e.g. alex.mercer@police.gov" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <input type="password" id="officer-password" class="form-control" value="officerpass" required>
+            </div>
+            <button type="submit" class="btn btn-secondary" id="btn-submit-officer">Register Officer</button>
+          </form>
+        </div>
+
+        <!-- Issue Weapon Form -->
+        <div class="glass-card">
+          <div class="card-header">Issue Weapon</div>
+          <form id="form-issue-weapon">
+            <div class="form-group">
+              <label class="form-label">Select Officer</label>
+              <select id="issue-officer-select" class="form-control" required>
+                <option value="">Select Officer...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Select Available Weapon</label>
+              <select id="issue-weapon-select" class="form-control" required>
+                <option value="">Select Available Weapon...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Expected Return (Days)</label>
+              <input type="number" id="issue-days" class="form-control" value="7" min="1" max="90" required>
+            </div>
+            <button type="submit" class="btn btn-primary" id="btn-submit-issuance">Authorize Issuance</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Right Column: Active Lists & Notifications -->
+      <div class="main-column">
+        <!-- Active Issuances Table -->
+        <div class="glass-card">
+          <div class="card-header">Active Assignments (Issued Inventory)</div>
+          <div class="table-container">
+            <table id="table-issuances">
+              <thead>
+                <tr>
+                  <th>Officer</th>
+                  <th>Weapon</th>
+                  <th>Issued Date</th>
+                  <th>Expected Return</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="issuances-list-body">
+                <tr>
+                  <td colspan="5" class="empty-state">Loading assignments...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Officer Notifications (Observer Pattern Demo) -->
+        <div class="glass-card">
+          <div class="card-header">
+            <span>Officer Alerts Feed</span>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <select id="notif-officer-select" class="form-control" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                <option value="">Choose Officer...</option>
+              </select>
+            </div>
+          </div>
+          <div class="notification-feed" id="notif-feed-body">
+            <div class="empty-state" style="padding: 1.5rem 1rem;">Select an officer to view notifications (Observer Pattern alerts).</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Return Confirmation Modal (Custom alert box) -->
+  <div id="return-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center;">
+    <div class="glass-card" style="width:100%; max-width:450px; margin-bottom:0;">
+      <div class="card-header">Confirm Weapon Return</div>
+      <div style="margin-bottom:1.5rem;">
+        <p style="margin-bottom:0.75rem;">Please review weapon condition before logging return:</p>
+        <div class="form-group">
+          <label class="form-label">Weapon Condition</label>
+          <select id="return-condition" class="form-control">
+            <option value="EXCELLENT">EXCELLENT (Clean & Ready)</option>
+            <option value="NEED_CLEANING">NEED CLEANING (Carbon residues)</option>
+            <option value="DAMAGED">DAMAGED (Requires maintenance)</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex; gap:1rem;">
+        <button id="btn-confirm-return" class="btn btn-primary">Submit Return</button>
+        <button id="btn-cancel-return" class="btn btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Script Logic -->
+  <script>
+    const API_URL = '';
+    let currentReturnIssuanceId = null;
+
+    // Elements
+    const formRegisterOfficer = document.getElementById('form-register-officer');
+    const formIssueWeapon = document.getElementById('form-issue-weapon');
+    const issueOfficerSelect = document.getElementById('issue-officer-select');
+    const issueWeaponSelect = document.getElementById('issue-weapon-select');
+    const notifOfficerSelect = document.getElementById('notif-officer-select');
+    
+    const issuancesBody = document.getElementById('issuances-list-body');
+    const notifFeedBody = document.getElementById('notif-feed-body');
+
+    // Modal elements
+    const returnModal = document.getElementById('return-modal');
+    const btnConfirmReturn = document.getElementById('btn-confirm-return');
+    const btnCancelReturn = document.getElementById('btn-cancel-return');
+    const returnCondition = document.getElementById('return-condition');
+
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+      loadOfficers();
+      loadAvailableWeapons();
+      loadActiveIssuances();
+    });
+
+    // Toast Alert helper
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `
+        <span>${type === 'success' ? '✔' : '❌'}</span>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // Load Officers
+    function loadOfficers() {
+      fetch(`${API_URL}/api/officers`)
+        .then(res => res.json())
+        .then(data => {
+          // Fill Select boxes
+          issueOfficerSelect.innerHTML = '<option value="">Select Officer...</option>';
+          notifOfficerSelect.innerHTML = '<option value="">Choose Officer...</option>';
+          
+          data.forEach(officer => {
+            const label = `${officer.name} (${officer.badgeNumber} - ${officer.rank})`;
+            
+            const opt1 = document.createElement('option');
+            opt1.value = officer.id;
+            opt1.textContent = label;
+            issueOfficerSelect.appendChild(opt1);
+
+            const opt2 = document.createElement('option');
+            opt2.value = officer.id;
+            opt2.textContent = label;
+            notifOfficerSelect.appendChild(opt2);
+          });
+        })
+        .catch(err => {
+          console.error(err);
+          showToast('Failed to load officers list', 'error');
+        });
+    }
+
+    // Load Available Weapons
+    function loadAvailableWeapons() {
+      fetch(`${API_URL}/api/weapons/available`)
+        .then(res => res.json())
+        .then(data => {
+          issueWeaponSelect.innerHTML = '<option value="">Select Available Weapon...</option>';
+          data.forEach(w => {
+            const opt = document.createElement('option');
+            opt.value = w.id;
+            opt.textContent = `${w.name} (S/N: ${w.serialNumber})`;
+            issueWeaponSelect.appendChild(opt);
+          });
+        })
+        .catch(err => {
+          console.error(err);
+          showToast('Failed to load available weapons', 'error');
+        });
+    }
+
+    // Load Active Issuances
+    function loadActiveIssuances() {
+      fetch(`${API_URL}/api/issuance/active`)
+        .then(res => res.json())
+        .then(data => {
+          renderIssuancesTable(data);
+        })
+        .catch(err => {
+          console.error(err);
+          issuancesBody.innerHTML = `<tr><td colspan="5" class="empty-state" style="color: var(--accent-rose)">Failed to fetch active assignments.</td></tr>`;
+        });
+    }
+
+    // Render Issuances Table
+    function renderIssuancesTable(records) {
+      issuancesBody.innerHTML = '';
+      if (records.length === 0) {
+        issuancesBody.innerHTML = `<tr><td colspan="5" class="empty-state">No active tactical assignments found.</td></tr>`;
+        return;
+      }
+
+      records.forEach(rec => {
+        const dateObj = new Date(rec.issueDate);
+        const expObj = new Date(rec.expectedReturnDate);
+        const issueStr = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const expStr = expObj.toLocaleDateString();
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <div style="font-weight:600;">${rec.officer.name}</div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">${rec.officer.badgeNumber} • ${rec.officer.rank}</div>
+          </td>
+          <td>
+            <div style="font-weight:500;">${rec.weapon.name}</div>
+            <div style="font-size:0.8rem; font-family:monospace; color:var(--accent-cyan);">${rec.weapon.serialNumber}</div>
+          </td>
+          <td style="font-size:0.85rem; color:var(--text-muted);">${issueStr}</td>
+          <td style="font-size:0.85rem; font-weight:600; color: ${new Date() > expObj ? 'var(--accent-rose)' : 'var(--text-main)'}">${expStr}</td>
+          <td>
+            <button class="btn btn-secondary" style="padding:0.4rem 0.8rem; font-size:0.8rem; width:auto; border-color:var(--accent-cyan); color:var(--accent-cyan);" onclick="openReturnModal(${rec.id})">
+              Return Weapon
+            </button>
+          </td>
+        `;
+        issuancesBody.appendChild(tr);
+      });
+    }
+
+    // Register Officer Form Submission
+    formRegisterOfficer.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('officer-name').value.trim();
+      const badgeNumber = document.getElementById('officer-badge').value.trim();
+      const rank = document.getElementById('officer-rank').value.trim();
+      const email = document.getElementById('officer-email').value.trim();
+      const password = document.getElementById('officer-password').value;
+
+      fetch(`${API_URL}/api/officers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, badgeNumber, rank, email, password })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Badge number or email already registered');
+        return res.json();
+      })
+      .then(data => {
+        showToast(`Officer ${data.name} (Badge: ${data.badgeNumber}) registered successfully`);
+        formRegisterOfficer.reset();
+        document.getElementById('officer-password').value = "officerpass";
+        loadOfficers();
+      })
+      .catch(err => {
+        console.error(err);
+        showToast(err.message, 'error');
+      });
+    });
+
+    // Authorize Issuance Form Submission
+    formIssueWeapon.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const officerId = parseInt(issueOfficerSelect.value);
+      const weaponId = parseInt(issueWeaponSelect.value);
+      const expectedReturnDays = parseInt(document.getElementById('issue-days').value);
+
+      fetch(`${API_URL}/api/issuance`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ officerId, weaponId, expectedReturnDays })
+      })
+      .then(res => {
+        if (res.status === 409) {
+          throw new Error('Conflict: Weapon is already issued or unavailable');
+        }
+        if (!res.ok) {
+          throw new Error('Failed to complete weapon issuance');
+        }
+        return res.json();
+      })
+      .then(data => {
+        showToast(`Weapon successfully issued to ${data.officer.name}`);
+        formIssueWeapon.reset();
+        document.getElementById('issue-days').value = "7";
+        loadAvailableWeapons();
+        loadActiveIssuances();
+        // If the notifications dropdown is showing this officer, refresh notifications
+        if (notifOfficerSelect.value == officerId) {
+          loadNotifications(officerId);
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        showToast(err.message, 'error');
+      });
+    });
+
+    // Open Return Modal
+    window.openReturnModal = function(issuanceId) {
+      currentReturnIssuanceId = issuanceId;
+      returnModal.style.display = 'flex';
+    };
+
+    // Close Return Modal
+    function closeReturnModal() {
+      returnModal.style.display = 'none';
+      currentReturnIssuanceId = null;
+    }
+
+    btnCancelReturn.addEventListener('click', closeReturnModal);
+
+    // Submit Return Confirmation
+    btnConfirmReturn.addEventListener('click', () => {
+      if (!currentReturnIssuanceId) return;
+      const cond = returnCondition.value;
+
+      fetch(`${API_URL}/api/return`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ issuanceRecordId: currentReturnIssuanceId, conditionStatus: cond })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to return weapon');
+        return res.json();
+      })
+      .then(data => {
+        showToast('Weapon returned successfully');
+        closeReturnModal();
+        loadAvailableWeapons();
+        loadActiveIssuances();
+        // Reload notifications if an officer is selected
+        const selectedOfficerId = notifOfficerSelect.value;
+        if (selectedOfficerId) {
+          loadNotifications(selectedOfficerId);
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        showToast('Error returning weapon', 'error');
+        closeReturnModal();
+      });
+    });
+
+    // Load Notifications for Officer
+    function loadNotifications(officerId) {
+      fetch(`${API_URL}/api/notifications/officer/${officerId}`)
+        .then(res => res.json())
+        .then(data => {
+          renderNotifications(data);
+        })
+        .catch(err => {
+          console.error(err);
+          notifFeedBody.innerHTML = `<div class="empty-state" style="color: var(--accent-rose)">Failed to fetch notifications.</div>`;
+        });
+    }
+
+    // Render Notifications Feed
+    function renderNotifications(notifications) {
+      notifFeedBody.innerHTML = '';
+      if (notifications.length === 0) {
+        notifFeedBody.innerHTML = `<div class="empty-state" style="padding: 1.5rem 1rem;">No notifications found for this officer.</div>`;
+        return;
+      }
+
+      notifications.forEach(n => {
+        const timeStr = new Date(n.timestamp).toLocaleString();
+        const div = document.createElement('div');
+        div.className = `notification-item ${n.read ? 'read' : ''}`;
+        div.innerHTML = `
+          <div class="notification-text">${n.message}</div>
+          <div class="notification-time">${timeStr}</div>
+          ${!n.read ? `<button style="background:none; border:none; color:var(--accent-cyan); font-size:0.75rem; cursor:pointer; margin-top:0.4rem; padding:0; display:block; font-weight:600; text-decoration:underline;" onclick="markAsRead(${n.id}, ${n.officer.id})">Mark as Read</button>` : ''}
+        `;
+        notifFeedBody.appendChild(div);
+      });
+    }
+
+    // Mark notification as read
+    window.markAsRead = function(notificationId, officerId) {
+      fetch(`${API_URL}/api/notifications/${notificationId}/read`, {
+        method: 'PUT'
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to update notification');
+        loadNotifications(officerId);
+      })
+      .catch(err => console.error(err));
+    };
+
+    // Change Notifications Officer selection
+    notifOfficerSelect.addEventListener('change', () => {
+      const val = notifOfficerSelect.value;
+      if (!val) {
+        notifFeedBody.innerHTML = `<div class="empty-state" style="padding: 1.5rem 1rem;">Select an officer to view notifications (Observer Pattern alerts).</div>`;
+      } else {
+        loadNotifications(val);
+      }
+    });
+
+  </script>
+</body>
+</html>
