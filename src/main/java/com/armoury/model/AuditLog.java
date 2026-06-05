@@ -17,7 +17,7 @@ public class AuditLog {
     private Long id;
 
     @Column(nullable = false)
-    private String action; // e.g. ADD_WEAPON, ISSUE_WEAPON, RETURN_WEAPON
+    private String action; 
 
     @Column(nullable = false, length = 1000)
     private String details;
